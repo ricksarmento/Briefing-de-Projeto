@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Briefing de Projeto · Ricardo Sarmento</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&family=Jost+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1C1A16;
+  --ink2: #4A4640;
+  --ink3: #8A847C;
+  --cream: #F8F5EF;
+  --cream2: #EDE9E0;
+  --cream3: #E2DDD4;
+  --gold: #B8960C;
+  --gold2: #D4AC20;
+  --gold-pale: #FBF6E3;
+  --white: #FDFCF9;
+  --danger: #8B2E2E;
+  --danger-pale: #FDF0F0;
+  --success: #2E6B4A;
+  --success-pale: #EFF7F3;
+
+  --step-active: var(--ink);
+  --step-done: var(--gold);
+  --step-idle: var(--cream3);
+
+  --r: 6px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  font-family: 'Jost', sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* BG TEXTURE */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 110% 20%, rgba(184,150,12,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at -10% 80%, rgba(28,26,22,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* HEADER */
+header {
+  position: relative; z-index: 10;
+  padding: 2.5rem 3rem 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.brand {
+  display: flex; flex-direction: column; gap: 0.15rem;
+}
+.brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem; font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+.brand-sub {
+  font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink3);
+}
+.header-tag {
+  font-size: 0.65rem; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid var(--gold2);
+  background: var(--gold-pale);
+  padding: 0.4rem 0.85rem;
+  border-radius: 100px;
+  margin-top: 0.3rem;
+}
+
+/* PROGRESS BAR */
+.progress-wrap {
+  position: relative; z-index: 10;
+  padding: 2rem 3rem 0;
+}
+.progress-track {
+  display: flex; align-items: center; gap: 0;
+  position: relative;
+}
+.progress-track::before {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 14px;
+  height: 1px; background: var(--cream3);
+  z-index: 0;
+}
+.prog-step {
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1; position: relative; z-index: 1; cursor: pointer;
+}
+.prog-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 600;
+  font-family: 'Jost Mono', monospace;
+  transition: var(--transition);
+  background: var(--cream2);
+  border: 1.5px solid var(--cream3);
+  color: var(--ink3);
+}
+.prog-step.done .prog-dot {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(184,150,12,0.15);
+}
+.prog-step.active .prog-dot {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(28,26,22,0.1);
+}
+.prog-label {
+  font-size: 0.62rem; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink3); margin-top: 0.5rem;
+  text-align: center;
+}
+.prog-step.active .prog-label { color: var(--ink); }
+.prog-step.done .prog-label { color: var(--gold); }
+
+/* MAIN LAYOUT */
+main {
+  position: relative; z-index: 5;
+  max-width: 780px; margin: 0 auto;
+  padding: 3rem 2rem 6rem;
+}
+
+/* STEP PANEL */
+.step-panel {
+  display: none;
+  animation: fadeUp 0.45s var(--transition) both;
+}
+.step-panel.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.step-eyebrow {
+  font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.6rem;
+}
+.step-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.4rem; font-weight: 300;
+  line-height: 1.2;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+.step-desc {
+  font-size: 0.9rem; color: var(--ink3);
+  line-height: 1.7; margin-bottom: 2.5rem;
+  max-width: 540px;
+}
+
+/* FIELDS */
+.field-group {
+  display: grid; gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+.field-group.cols2 { grid-template-columns: 1fr 1fr; }
+.field-group.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.field {
+  display: flex; flex-direction: column; gap: 0.45rem;
+}
+.field label {
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink2);
+}
+.field label span.req {
+  color: var(--gold);
+  margin-left: 3px;
+}
+.field label span.opt {
+  font-weight: 400; text-transform: none;
+  letter-spacing: 0; color: var(--ink3);
+  font-size: 0.65rem; margin-left: 4px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.92rem;
+  color: var(--ink);
+  background: var(--white);
+  border: 1.5px solid var(--cream3);
+  border-radius: var(--r);
+  padding: 0.8rem 1rem;
+  transition: var(--transition);
+  outline: none;
+  width: 100%;
+  -webkit-appearance: none;
+}
+.field input::placeholder,
+.field textarea::placeholder { color: var(--ink3); }
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(28,26,22,0.07);
+  background: var(--white);
+}
+.field input.invalid,
+.field select.invalid,
+.field textarea.invalid {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(139,46,46,0.08);
+}
+.field textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A847C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; padding-right: 2.5rem; cursor: pointer; }
+
+.field-error {
+  font-size: 0.72rem; color: var(--danger);
+  display: none; margin-top: -0.2rem;
+}
+.field.has-error .field-error { display: block; }
+
+/* RADIO / CHECKBOX CARDS */
+.card-group {
+  display: grid; gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+.card-group.cols2 { grid-template-columns: 1fr 1fr; }
+.card-group.cols3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.option-card {
+  position: relative;
+}
+.option-card input {
+  position: absolute; opacity: 0; width: 0; height: 0;
+}
+.option-card label {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  padding: 1rem 1.1rem;
+  background: var(--white);
+  border: 1.5px solid var(--cream3);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: var(--transition);
+  user-select: none;
+}
+.option-card label:hover {
+  border-color: var(--cream3);
+  background: var(--cream2);
+}
+.option-card input:checked + label {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: white;
+}
+.option-card input:checked + label .oc-sub { color: rgba(255,255,255,0.6); }
+.oc-title { font-size: 0.88rem; font-weight: 500; }
+.oc-sub { font-size: 0.72rem; color: var(--ink3); }
+.oc-icon { font-size: 1.3rem; margin-bottom: 0.2rem; }
+
+/* ESTILO VISUAL CARDS */
+.style-card label {
+  align-items: center;
+  padding: 0.8rem 1rem;
+  flex-direction: row; gap: 0.75rem;
+}
+.style-swatch {
+  width: 32px; height: 32px; border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* SLIDER */
+.slider-field {
+  display: flex; flex-direction: column; gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.slider-field label {
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink2);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.slider-field label span.val {
+  font-family: 'Jost Mono', monospace;
+  font-size: 0.8rem; font-weight: 400;
+  color: var(--gold); letter-spacing: 0;
+  text-transform: none;
+  background: var(--gold-pale);
+  border: 1px solid rgba(184,150,12,0.3);
+  padding: 0.15rem 0.6rem;
+  border-radius: 100px;
+}
+.slider-field input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; height: 4px;
+  background: linear-gradient(to right, var(--ink) 0%, var(--ink) var(--pct, 50%), var(--cream3) var(--pct, 50%));
+  border-radius: 2px; outline: none; cursor: pointer; border: none; padding: 0;
+}
+.slider-field input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--ink);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.slider-field input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.slider-ends {
+  display: flex; justify-content: space-between;
+  font-size: 0.65rem; color: var(--ink3);
+  margin-top: -0.4rem;
+}
+
+/* PRIORITY MATRIX */
+.priority-matrix {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.75rem; margin-bottom: 2rem;
+}
+.priority-item {
+  background: var(--white);
+  border: 1.5px solid var(--cream3);
+  border-radius: var(--r);
+  padding: 1rem;
+}
+.priority-item .pi-label {
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--ink2); margin-bottom: 0.6rem;
+}
+.priority-stars {
+  display: flex; gap: 0.35rem;
+}
+.star {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px;
+  background: var(--cream2);
+  border: 1px solid var(--cream3);
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--ink3);
+  transition: var(--transition);
+}
+.star.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: white;
+}
+
+/* DIVIDER */
+.divider {
+  border: none;
+  border-top: 1px solid var(--cream3);
+  margin: 2rem 0;
+}
+.divider-label {
+  text-align: center; position: relative;
+  margin: 2rem 0;
+}
+.divider-label::before {
+  content: '';
+  position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: var(--cream3);
+}
+.divider-label span {
+  position: relative; background: var(--cream);
+  padding: 0 1rem;
+  font-size: 0.65rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink3);
+}
+
+/* NAVIGATION BUTTONS */
+.step-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 3rem; padding-top: 2rem;
+  border-top: 1px solid var(--cream3);
+}
+.btn {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border: none; outline: none;
+  cursor: pointer;
+  padding: 0.85rem 2rem;
+  border-radius: var(--r);
+  transition: var(--transition);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--ink3);
+  border: 1.5px solid var(--cream3);
+}
+.btn-ghost:hover { border-color: var(--ink3); color: var(--ink); }
+.btn-primary {
+  background: var(--ink);
+  color: var(--white);
+}
+.btn-primary:hover {
+  background: #2C2A24;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(28,26,22,0.2);
+}
+.btn-gold {
+  background: var(--gold);
+  color: var(--white);
+}
+.btn-gold:hover {
+  background: var(--gold2);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(184,150,12,0.3);
+}
+
+/* STEP INDICATOR TEXT */
+.step-counter {
+  font-family: 'Jost Mono', monospace;
+  font-size: 0.72rem; color: var(--ink3);
+}
+
+/* SUCCESS SCREEN */
+#success-screen {
+  display: none;
+  text-align: center;
+  padding: 4rem 2rem;
+  animation: fadeUp 0.5s ease both;
+}
+#success-screen.active { display: block; }
+.success-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--success-pale);
+  border: 2px solid var(--success);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 2rem;
+  font-size: 1.8rem;
+}
+.success-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.2rem; font-weight: 300;
+  color: var(--ink); margin-bottom: 0.75rem;
+}
+.success-sub { color: var(--ink3); font-size: 0.9rem; line-height: 1.7; max-width: 460px; margin: 0 auto 2.5rem; }
+
+/* SUMMARY CARD */
+.summary-card {
+  background: var(--white);
+  border: 1px solid var(--cream3);
+  border-radius: 10px;
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 560px;
+  text-align: left;
+}
+.summary-section { margin-bottom: 1.5rem; }
+.summary-section:last-child { margin-bottom: 0; }
+.sum-label {
+  font-size: 0.62rem; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--cream3);
+}
+.sum-row {
+  display: grid; grid-template-columns: 40% 60%;
+  gap: 0.25rem 0.5rem; font-size: 0.85rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--cream2);
+}
+.sum-row:last-child { border-bottom: none; }
+.sum-key { color: var(--ink3); font-size: 0.8rem; }
+.sum-val { color: var(--ink); font-weight: 500; }
+
+/* ORNAMENT LINE */
+.ornament {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 1.5rem 0;
+}
+.ornament::before, .ornament::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(to right, transparent, var(--cream3));
+}
+.ornament::after {
+  background: linear-gradient(to left, transparent, var(--cream3));
+}
+.ornament-diamond {
+  width: 8px; height: 8px;
+  background: var(--gold);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+/* PRINT / COPY BTN */
+.action-row {
+  display: flex; gap: 0.75rem; justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* TOOLTIP HINT */
+.field-hint {
+  font-size: 0.72rem; color: var(--ink3);
+  margin-top: -0.1rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 640px) {
+  header { padding: 1.5rem 1.25rem 0; flex-direction: column; gap: 0.75rem; }
+  .progress-wrap { padding: 1.5rem 1.25rem 0; }
+  .prog-label { display: none; }
+  main { padding: 2rem 1.25rem 5rem; }
+  .field-group.cols2, .field-group.cols3 { grid-template-columns: 1fr; }
+  .card-group.cols2, .card-group.cols3 { grid-template-columns: 1fr; }
+  .priority-matrix { grid-template-columns: 1fr; }
+  .step-title { font-size: 1.8rem; }
+}
+
+/* Highlight number */
+.hl-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 4rem; font-weight: 300;
+  color: var(--cream3);
+  position: absolute; right: 0; top: -1rem;
+  line-height: 1; pointer-events: none;
+  user-select: none;
+}
+
+/* CHECKBOX TOGGLE */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.9rem 1rem;
+  background: var(--white);
+  border: 1.5px solid var(--cream3);
+  border-radius: var(--r);
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.toggle-row:hover { border-color: var(--cream3); background: var(--cream2); }
+.toggle-row input { display: none; }
+.toggle-row.checked { border-color: var(--ink); background: var(--ink); }
+.toggle-row.checked .tr-label { color: white; }
+.toggle-row.checked .tr-check { background: white; color: var(--ink); }
+.tr-label { font-size: 0.88rem; font-weight: 400; }
+.tr-check {
+  width: 22px; height: 22px;
+  border-radius: 4px;
+  background: var(--cream3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; flex-shrink: 0;
+  transition: var(--transition);
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-name">Ricardo Sarmento</div>
+    <div class="brand-sub">Design de Interiores</div>
+  </div>
+  <div class="header-tag">Briefing de Projeto · BRF-001</div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-track" id="prog-track">
+    <div class="prog-step active" data-step="0">
+      <div class="prog-dot">01</div>
+      <div class="prog-label">Identificação</div>
+    </div>
+    <div class="prog-step" data-step="1">
+      <div class="prog-dot">02</div>
+      <div class="prog-label">O Projeto</div>
+    </div>
+    <div class="prog-step" data-step="2">
+      <div class="prog-dot">03</div>
+      <div class="prog-label">Espaço</div>
+    </div>
+    <div class="prog-step" data-step="3">
+      <div class="prog-dot">04</div>
+      <div class="prog-label">Estilo</div>
+    </div>
+    <div class="prog-step" data-step="4">
+      <div class="prog-dot">05</div>
+      <div class="prog-label">Prioridades</div>
+    </div>
+    <div class="prog-step" data-step="5">
+      <div class="prog-dot">06</div>
+      <div class="prog-label">Referências</div>
+    </div>
+    <div class="prog-step" data-step="6">
+      <div class="prog-dot">07</div>
+      <div class="prog-label">Logística</div>
+    </div>
+  </div>
+</div>
+
+<main>
+<div id="form-wrapper">
+
+<!-- ===== ETAPA 1: IDENTIFICAÇÃO ===== -->
+<div class="step-panel active" id="step-0">
+  <div style="position:relative;">
+    <p class="step-eyebrow">Etapa 01 de 07</p>
+    <h1 class="step-title">Olá,<br><em>vamos nos conhecer?</em></h1>
+    <p class="step-desc">Estas informações nos ajudam a personalizar completamente o atendimento. Leva menos de 2 minutos para preencher esta etapa.</p>
+    <span class="hl-number">01</span>
+  </div>
+
+  <div class="field-group cols2">
+    <div class="field" id="f-nome">
+      <label>Nome completo <span class="req">*</span></label>
+      <input type="text" id="nome" placeholder="Seu nome ou razão social" autocomplete="name">
+      <div class="field-error">Por favor, informe seu nome</div>
+    </div>
+    <div class="field" id="f-empresa">
+      <label>Empresa / Organização <span class="opt">(opcional)</span></label>
+      <input type="text" id="empresa" placeholder="Ex: Escola Construir e Aprender">
+    </div>
+  </div>
+
+  <div class="field-group cols2">
+    <div class="field" id="f-email">
+      <label>E-mail <span class="req">*</span></label>
+      <input type="email" id="email" placeholder="contato@exemplo.com" autocomplete="email">
+      <div class="field-error">Informe um e-mail válido</div>
+    </div>
+    <div class="field" id="f-telefone">
+      <label>WhatsApp / Telefone <span class="req">*</span></label>
+      <input type="tel" id="telefone" placeholder="(XX) 9 XXXX-XXXX" autocomplete="tel">
+      <div class="field-error">Informe seu telefone</div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field" id="f-como-chegou">
+      <label>Como chegou até mim? <span class="req">*</span></label>
+      <select id="como-chegou">
+        <option value="">Selecione uma opção</option>
+        <option>Indicação de amigo ou familiar</option>
+        <option>Indicação de profissional parceiro</option>
+        <option>Instagram</option>
+        <option>Google / busca online</option>
+        <option>Já somos clientes</option>
+        <option>Outro</option>
+      </select>
+      <div class="field-error">Selecione uma opção</div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Já trabalhou com designer de interiores antes? <span class="req">*</span></label>
+    </div>
+  </div>
+  <div class="card-group cols3">
+    <div class="option-card">
+      <input type="radio" name="exp-design" id="exp-sim" value="Sim, já trabalhei">
+      <label for="exp-sim"><span class="oc-icon">✓</span><span class="oc-title">Sim</span><span class="oc-sub">Tenho experiência</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="exp-design" id="exp-nao" value="Não, é a primeira vez">
+      <label for="exp-nao"><span class="oc-icon">◇</span><span class="oc-title">Não</span><span class="oc-sub">Primeira vez</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="exp-design" id="exp-talvez" value="Consultei, mas não contratei">
+      <label for="exp-talvez"><span class="oc-icon">~</span><span class="oc-title">Consultei</span><span class="oc-sub">Mas não contratei</span></label>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <span class="step-counter">1 / 7</span>
+    <button class="btn btn-primary" onclick="nextStep(0)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ===== ETAPA 2: O PROJETO ===== -->
+<div class="step-panel" id="step-1">
+  <div style="position:relative;">
+    <p class="step-eyebrow">Etapa 02 de 07</p>
+    <h1 class="step-title">Fale sobre <em>o seu projeto</em></h1>
+    <p class="step-desc">Quanto mais detalhes você compartilhar aqui, mais preciso e personalizado será o projeto.</p>
+    <span class="hl-number">02</span>
+  </div>
+
+  <div class="field-group">
+    <div class="field" id="f-tipo-projeto">
+      <label>Tipo de projeto <span class="req">*</span></label>
+    </div>
+  </div>
+  <div class="card-group cols2">
+    <div class="option-card">
+      <input type="radio" name="tipo-proj" id="tp-residencial" value="Residencial">
+      <label for="tp-residencial"><span class="oc-icon">🏠</span><span class="oc-title">Residencial</span><span class="oc-sub">Casa ou apartamento</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="tipo-proj" id="tp-comercial" value="Comercial">
+      <label for="tp-comercial"><span class="oc-icon">🏢</span><span class="oc-title">Comercial</span><span class="oc-sub">Escritório, loja, clínica...</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="tipo-proj" id="tp-institucional" value="Institucional">
+      <label for="tp-institucional"><span class="oc-icon">🏫</span><span class="oc-title">Institucional</span><span class="oc-sub">Escola, ONG, órgão público</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="tipo-proj" id="tp-outro" value="Outro">
+      <label for="tp-outro"><span class="oc-icon">✦</span><span class="oc-title">Outro</span><span class="oc-sub">Especificarei abaixo</span></label>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field" id="f-descricao-projeto">
+      <label>Descrição do projeto <span class="req">*</span></label>
+      <textarea id="descricao-projeto" placeholder="Descreva com suas palavras o que você tem em mente. O que é o espaço? O que você quer que ele seja? Quem vai usá-lo? Não precisa ser técnico — seja espontâneo."></textarea>
+      <div class="field-hint">Ex: "Quero transformar o playground da escola em um ambiente lúdico, seguro e colorido para crianças de 0 a 11 anos..."</div>
+      <div class="field-error">Por favor, descreva o projeto</div>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field" id="f-uso">
+      <label>Quem vai usar este espaço? <span class="req">*</span></label>
+      <textarea id="uso" rows="2" style="min-height:75px;" placeholder="Ex: Crianças de 0 a 11 anos e educadores. O espaço precisa ser seguro, estimulante e de fácil manutenção."></textarea>
+      <div class="field-error">Descreva quem usará o espaço</div>
+    </div>
+  </div>
+
+  <div class="field-group cols2">
+    <div class="field" id="f-objetivo">
+      <label>Principal objetivo do projeto <span class="req">*</span></label>
+      <select id="objetivo">
+        <option value="">Selecione</option>
+        <option>Reforma completa do espaço</option>
+        <option>Reforma parcial / atualização</option>
+        <option>Projeto para imóvel novo</option>
+        <option>Decoração e ambientação</option>
+        <option>Projeto de um ambiente específico</option>
+        <option>Consultoria e diretrizes</option>
+      </select>
+      <div class="field-error">Selecione o objetivo</div>
+    </div>
+    <div class="field" id="f-prazo">
+      <label>Prazo desejado para entrega <span class="req">*</span></label>
+      <select id="prazo">
+        <option value="">Selecione</option>
+        <option>Até 30 dias</option>
+        <option>De 30 a 60 dias</option>
+        <option>De 60 a 90 dias</option>
+        <option>De 3 a 6 meses</option>
+        <option>Mais de 6 meses / sem pressa</option>
+        <option>Tenho data específica (informarei nas observações)</option>
+      </select>
+      <div class="field-error">Informe o prazo desejado</div>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn btn-ghost" onclick="prevStep(1)">← Voltar</button>
+    <span class="step-counter">2 / 7</span>
+    <button class="btn btn-primary" onclick="nextStep(1)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ===== ETAPA 3: O ESPAÇO ===== -->
+<div class="step-panel" id="step-2">
+  <div style="position:relative;">
+    <p class="step-eyebrow">Etapa 03 de 07</p>
+    <h1 class="step-title">Sobre <em>o espaço</em></h1>
+    <p class="step-desc">Dados técnicos do ambiente. Se não souber as medidas exatas agora, estime — Ricardo fará o levantamento preciso durante a visita.</p>
+    <span class="hl-number">03</span>
+  </div>
+
+  <div class="field-group cols2">
+    <div class="field" id="f-endereco">
+      <label>Endereço do imóvel <span class="req">*</span></label>
+      <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade">
+      <div class="field-error">Informe o endereço</div>
+    </div>
+    <div class="field">
+      <label>Estado / UF</label>
+      <select id="uf">
+        <option value="">Selecione</option>
+        <option>AL</option><option>AP</option><option>AM</option><option>BA</option>
+        <option>CE</option><option>DF</option><option>ES</option><option>GO</option>
+        <option>MA</option><option>MT</option><option>MS</option><option>MG</option>
+        <option>PA</option><option>PB</option><option>PR</option><option>PE</option>
+        <option>PI</option><option>RJ</option><option>RN</option><option>RS</option>
+        <option>RO</option><option>RR</option><option>SC</option><option>SP</option>
+        <option>SE</option><option>TO</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field-group cols3">
+    <div class="field" id="f-area">
+      <label>Área total estimada (m²) <span class="req">*</span></label>
+      <input type="number" id="area" placeholder="Ex: 50" min="1">
+      <div class="field-error">Informe a área aproximada</div>
+    </div>
+    <div class="field">
+      <label>Pé-direito estimado (m) <span class="opt">(se souber)</span></label>
+      <input type="number" id="pe-direito" placeholder="Ex: 2,80" step="0.1" min="1">
+    </div>
+    <div class="field">
+      <label>Quantos ambientes?</label>
+      <input type="number" id="ambientes" placeholder="Ex: 2" min="1">
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field" id="f-ambientes-desc">
+      <label>Quais ambientes serão projetados? <span class="req">*</span></label>
+      <input type="text" id="ambientes-desc" placeholder="Ex: Playground, banheiro infantil">
+      <div class="field-error">Liste os ambientes</div>
+    </div>
+  </div>
+
+  <div class="divider-label"><span>Condições do espaço</span></div>
+
+  <div class="field-group">
+    <div class="field" id="f-estado-imovel">
+      <label>Estado atual do imóvel <span class="req">*</span></label>
+    </div>
+  </div>
+  <div class="card-group cols2">
+    <div class="option-card">
+      <input type="radio" name="estado-imovel" id="ei-novo" value="Imóvel novo / em obra">
+      <label for="ei-novo"><span class="oc-icon">✦</span><span class="oc-title">Imóvel novo / em obra</span><span class="oc-sub">Ainda sem uso ou em construção</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="estado-imovel" id="ei-usado" value="Imóvel em uso, com reforma">
+      <label for="ei-usado"><span class="oc-icon">↺</span><span class="oc-title">Em uso, com reforma</span><span class="oc-sub">Continuará funcionando durante</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="estado-imovel" id="ei-vazio" value="Imóvel vazio, para reformar">
+      <label for="ei-vazio"><span class="oc-icon">□</span><span class="oc-title">Vazio, para reformar</span><span class="oc-sub">Desocupado e pronto para obra</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="estado-imovel" id="ei-decoracao" value="Apenas decoração, sem obra">
+      <label for="ei-decoracao"><span class="oc-icon">◈</span><span class="oc-title">Só decoração</span><span class="oc-sub">Sem quebra-quebra</span></label>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Restrições ou condicionantes do espaço <span class="opt">(opcional)</span></label>
+      <textarea id="restricoes" rows="2" style="min-height:80px;" placeholder="Ex: Não pode alterar fachada; há instalações hidráulicas que precisam ser preservadas; existe uma parede estrutural que não pode ser removida..."></textarea>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Há planta baixa ou projeto existente? <span class="opt">(opcional)</span></label>
+      <select id="planta">
+        <option value="">Selecione</option>
+        <option>Sim, tenho planta e enviarei</option>
+        <option>Sim, tenho mas não sei se está atualizada</option>
+        <option>Não tenho planta</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn btn-ghost" onclick="prevStep(2)">← Voltar</button>
+    <span class="step-counter">3 / 7</span>
+    <button class="btn btn-primary" onclick="nextStep(2)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ===== ETAPA 4: ESTILO ===== -->
+<div class="step-panel" id="step-3">
+  <div style="position:relative;">
+    <p class="step-eyebrow">Etapa 04 de 07</p>
+    <h1 class="step-title">Identidade <em>e estilo</em></h1>
+    <p class="step-desc">Estas escolhas guiarão toda a linguagem visual do projeto. Pode selecionar mais de uma opção onde indicado.</p>
+    <span class="hl-number">04</span>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Estilo de projeto preferido <span class="opt">(selecione até 2)</span></label>
+    </div>
+  </div>
+  <div class="card-group cols2" id="estilos-group">
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-moderno" value="Moderno / contemporâneo">
+      <label for="est-moderno"><div class="style-swatch" style="background:linear-gradient(135deg,#2C2C2C,#6E6E6E)"></div><div><span class="oc-title">Moderno / contemporâneo</span><span class="oc-sub" style="display:block;">Linhas limpas, minimalismo</span></div></label>
+    </div>
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-escandinavo" value="Escandinavo / minimalista">
+      <label for="est-escandinavo"><div class="style-swatch" style="background:linear-gradient(135deg,#F0EDE8,#C8BEA8)"></div><div><span class="oc-title">Escandinavo / minimalista</span><span class="oc-sub" style="display:block;">Neutros, natureza, leveza</span></div></label>
+    </div>
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-industrial" value="Industrial">
+      <label for="est-industrial"><div class="style-swatch" style="background:linear-gradient(135deg,#4A4038,#8B7355)"></div><div><span class="oc-title">Industrial</span><span class="oc-sub" style="display:block;">Concreto, metal, madeira bruta</span></div></label>
+    </div>
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-classico" value="Clássico / neoclássico">
+      <label for="est-classico"><div class="style-swatch" style="background:linear-gradient(135deg,#C4A96E,#F5EDD8)"></div><div><span class="oc-title">Clássico / neoclássico</span><span class="oc-sub" style="display:block;">Ornamentos, simetria, elegância</span></div></label>
+    </div>
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-biofílico" value="Biofílico / natural">
+      <label for="est-biofílico"><div class="style-swatch" style="background:linear-gradient(135deg,#4A7A4A,#A8C890)"></div><div><span class="oc-title">Biofílico / natural</span><span class="oc-sub" style="display:block;">Verde, madeira, conexão com natureza</span></div></label>
+    </div>
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-ludico" value="Lúdico / colorido">
+      <label for="est-ludico"><div class="style-swatch" style="background:linear-gradient(135deg,#E84B8A,#F0A830,#4BADE8)"></div><div><span class="oc-title">Lúdico / colorido</span><span class="oc-sub" style="display:block;">Alegre, vibrante, criativo</span></div></label>
+    </div>
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-japones" value="Japandi / orgânico">
+      <label for="est-japones"><div class="style-swatch" style="background:linear-gradient(135deg,#B8A898,#E8E0D4)"></div><div><span class="oc-title">Japandi / orgânico</span><span class="oc-sub" style="display:block;">Wabi-sabi, texturas suaves</span></div></label>
+    </div>
+    <div class="option-card style-card">
+      <input type="checkbox" name="estilo" id="est-outro" value="Não sei definir / quero sugestão">
+      <label for="est-outro"><div class="style-swatch" style="background:linear-gradient(135deg,#D0C8C0,#F0EDE8)"></div><div><span class="oc-title">Não sei definir</span><span class="oc-sub" style="display:block;">Quero uma sugestão do designer</span></div></label>
+    </div>
+  </div>
+
+  <div class="divider-label"><span>Paleta de cores</span></div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Preferência de paleta de cores <span class="opt">(selecione todas que se aplicam)</span></label>
+    </div>
+  </div>
+  <div class="card-group cols3">
+    <div class="option-card"><input type="checkbox" name="cor" id="cor-neutros" value="Neutros (branco, bege, cinza)"><label for="cor-neutros"><span class="oc-title">Neutros</span><span class="oc-sub">Branco, bege, cinza</span></label></div>
+    <div class="option-card"><input type="checkbox" name="cor" id="cor-terrosos" value="Terrosos (ocre, terracota, caramelo)"><label for="cor-terrosos"><span class="oc-title">Terrosos</span><span class="oc-sub">Ocre, terracota, caramelo</span></label></div>
+    <div class="option-card"><input type="checkbox" name="cor" id="cor-frios" value="Frios (azul, verde, cinza-azulado)"><label for="cor-frios"><span class="oc-title">Frios</span><span class="oc-sub">Azul, verde, cinza-azulado</span></label></div>
+    <div class="option-card"><input type="checkbox" name="cor" id="cor-vibrantes" value="Vibrantes e coloridos"><label for="cor-vibrantes"><span class="oc-title">Vibrantes</span><span class="oc-sub">Cores intensas e marcantes</span></label></div>
+    <div class="option-card"><input type="checkbox" name="cor" id="cor-escuros" value="Escuros e dramáticos"><label for="cor-escuros"><span class="oc-title">Escuros</span><span class="oc-sub">Dramáticos, sofisticados</span></label></div>
+    <div class="option-card"><input type="checkbox" name="cor" id="cor-pasteis" value="Pastel e suaves"><label for="cor-pasteis"><span class="oc-title">Pastel</span><span class="oc-sub">Leves e delicados</span></label></div>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Cores ou materiais que devem ser <strong>evitados</strong> <span class="opt">(opcional)</span></label>
+      <textarea id="evitar" rows="2" style="min-height:75px;" placeholder="Ex: Não gosto de amarelo; evitar azul-marinho; prefiro não usar espelhos grandes; o cliente tem alergia a carpetes..."></textarea>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn btn-ghost" onclick="prevStep(3)">← Voltar</button>
+    <span class="step-counter">4 / 7</span>
+    <button class="btn btn-primary" onclick="nextStep(3)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ===== ETAPA 5: PRIORIDADES ===== -->
+<div class="step-panel" id="step-4">
+  <div style="position:relative;">
+    <p class="step-eyebrow">Etapa 05 de 07</p>
+    <h1 class="step-title"><em>O que mais</em> importa?</h1>
+    <p class="step-desc">Avalie de 1 a 5 estrelas a importância de cada aspecto para o seu projeto. Isso nos ajuda a direcionar esforço e investimento corretamente.</p>
+    <span class="hl-number">05</span>
+  </div>
+
+  <div class="priority-matrix">
+    <div class="priority-item">
+      <div class="pi-label">Estética e beleza visual</div>
+      <div class="priority-stars" data-key="estetica">
+        <div class="star" onclick="setStar(this,'estetica',1)">★</div>
+        <div class="star" onclick="setStar(this,'estetica',2)">★</div>
+        <div class="star" onclick="setStar(this,'estetica',3)">★</div>
+        <div class="star" onclick="setStar(this,'estetica',4)">★</div>
+        <div class="star" onclick="setStar(this,'estetica',5)">★</div>
+      </div>
+    </div>
+    <div class="priority-item">
+      <div class="pi-label">Funcionalidade e praticidade</div>
+      <div class="priority-stars" data-key="funcional">
+        <div class="star" onclick="setStar(this,'funcional',1)">★</div>
+        <div class="star" onclick="setStar(this,'funcional',2)">★</div>
+        <div class="star" onclick="setStar(this,'funcional',3)">★</div>
+        <div class="star" onclick="setStar(this,'funcional',4)">★</div>
+        <div class="star" onclick="setStar(this,'funcional',5)">★</div>
+      </div>
+    </div>
+    <div class="priority-item">
+      <div class="pi-label">Durabilidade dos materiais</div>
+      <div class="priority-stars" data-key="durabilidade">
+        <div class="star" onclick="setStar(this,'durabilidade',1)">★</div>
+        <div class="star" onclick="setStar(this,'durabilidade',2)">★</div>
+        <div class="star" onclick="setStar(this,'durabilidade',3)">★</div>
+        <div class="star" onclick="setStar(this,'durabilidade',4)">★</div>
+        <div class="star" onclick="setStar(this,'durabilidade',5)">★</div>
+      </div>
+    </div>
+    <div class="priority-item">
+      <div class="pi-label">Facilidade de manutenção</div>
+      <div class="priority-stars" data-key="manutencao">
+        <div class="star" onclick="setStar(this,'manutencao',1)">★</div>
+        <div class="star" onclick="setStar(this,'manutencao',2)">★</div>
+        <div class="star" onclick="setStar(this,'manutencao',3)">★</div>
+        <div class="star" onclick="setStar(this,'manutencao',4)">★</div>
+        <div class="star" onclick="setStar(this,'manutencao',5)">★</div>
+      </div>
+    </div>
+    <div class="priority-item">
+      <div class="pi-label">Conforto e bem-estar dos usuários</div>
+      <div class="priority-stars" data-key="conforto">
+        <div class="star" onclick="setStar(this,'conforto',1)">★</div>
+        <div class="star" onclick="setStar(this,'conforto',2)">★</div>
+        <div class="star" onclick="setStar(this,'conforto',3)">★</div>
+        <div class="star" onclick="setStar(this,'conforto',4)">★</div>
+        <div class="star" onclick="setStar(this,'conforto',5)">★</div>
+      </div>
+    </div>
+    <div class="priority-item">
+      <div class="pi-label">Sustentabilidade e eco-amigável</div>
+      <div class="priority-stars" data-key="sustentabilidade">
+        <div class="star" onclick="setStar(this,'sustentabilidade',1)">★</div>
+        <div class="star" onclick="setStar(this,'sustentabilidade',2)">★</div>
+        <div class="star" onclick="setStar(this,'sustentabilidade',3)">★</div>
+        <div class="star" onclick="setStar(this,'sustentabilidade',4)">★</div>
+        <div class="star" onclick="setStar(this,'sustentabilidade',5)">★</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider-label"><span>Investimento</span></div>
+
+  <div class="slider-field">
+    <label>Orçamento estimado de execução da obra / móveis <span class="val" id="budget-label">Não definido</span></label>
+    <input type="range" id="budget-range" min="0" max="11" value="0" oninput="updateBudget(this.value)">
+    <div class="slider-ends"><span>Não definido</span><span>Acima de R$ 200 mil</span></div>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Há flexibilidade no orçamento?</label>
+      <select id="flex-orcamento">
+        <option value="">Selecione</option>
+        <option>Sim, há margem se o projeto exigir</option>
+        <option>Pouca flexibilidade — precisa estar dentro do limite</option>
+        <option>Orçamento rígido, sem margem</option>
+        <option>Ainda vou definir com a equipe interna</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn btn-ghost" onclick="prevStep(4)">← Voltar</button>
+    <span class="step-counter">5 / 7</span>
+    <button class="btn btn-primary" onclick="nextStep(4)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ===== ETAPA 6: REFERÊNCIAS ===== -->
+<div class="step-panel" id="step-5">
+  <div style="position:relative;">
+    <p class="step-eyebrow">Etapa 06 de 07</p>
+    <h1 class="step-title">Inspirações <em>e referências</em></h1>
+    <p class="step-desc">Referências visuais são o atalho mais eficiente para o projeto certo. Conte o que você ama e o que não quer em hipótese alguma.</p>
+    <span class="hl-number">06</span>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Links ou referências visuais que você admira <span class="opt">(opcional)</span></label>
+      <textarea id="referencias" rows="3" style="min-height:90px;" placeholder="Cole links do Pinterest, Instagram, Houzz, revistas ou projetos que você ama. Pode ser vários links, um por linha.&#10;Ex: https://pinterest.com/pin/...&#10;Ex: @perfil_que_admiro no Instagram"></textarea>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Existe algum projeto, ambiente ou marca que representa como você <strong>quer</strong> que fique? <span class="opt">(opcional)</span></label>
+      <textarea id="ref-positiva" rows="2" style="min-height:80px;" placeholder="Ex: Gosto muito do estilo da ZARA HOME — minimalista, sofisticado e atemporal. Ou: o ambiente da escola X tem exatamente a leveza que quero."></textarea>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Existe algum projeto ou ambiente que você <strong>não quer</strong> que se pareça? <span class="opt">(opcional)</span></label>
+      <textarea id="ref-negativa" rows="2" style="min-height:80px;" placeholder="Ex: Não quero que fique parecido com ambiente hospitalar — muito frio. Ou: não gosto do estilo anos 90 com muito dourado."></textarea>
+    </div>
+  </div>
+
+  <div class="divider-label"><span>Palavras que definem o projeto ideal</span></div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Selecione as palavras que melhor descrevem o resultado que você deseja <span class="opt">(selecione quantas quiser)</span></label>
+    </div>
+  </div>
+  <div class="card-group cols3" id="palavras-group">
+    <div class="option-card"><input type="checkbox" name="palavra" id="p1" value="Acolhedor"><label for="p1"><span class="oc-title">Acolhedor</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p2" value="Sofisticado"><label for="p2"><span class="oc-title">Sofisticado</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p3" value="Alegre"><label for="p3"><span class="oc-title">Alegre</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p4" value="Moderno"><label for="p4"><span class="oc-title">Moderno</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p5" value="Tranquilo"><label for="p5"><span class="oc-title">Tranquilo</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p6" value="Criativo"><label for="p6"><span class="oc-title">Criativo</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p7" value="Funcional"><label for="p7"><span class="oc-title">Funcional</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p8" value="Lúdico"><label for="p8"><span class="oc-title">Lúdico</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p9" value="Elegante"><label for="p9"><span class="oc-title">Elegante</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p10" value="Atemporal"><label for="p10"><span class="oc-title">Atemporal</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p11" value="Sustentável"><label for="p11"><span class="oc-title">Sustentável</span></label></div>
+    <div class="option-card"><input type="checkbox" name="palavra" id="p12" value="Sensorial"><label for="p12"><span class="oc-title">Sensorial</span></label></div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn btn-ghost" onclick="prevStep(5)">← Voltar</button>
+    <span class="step-counter">6 / 7</span>
+    <button class="btn btn-primary" onclick="nextStep(5)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ===== ETAPA 7: LOGÍSTICA ===== -->
+<div class="step-panel" id="step-6">
+  <div style="position:relative;">
+    <p class="step-eyebrow">Etapa 07 de 07</p>
+    <h1 class="step-title">Últimos <em>detalhes</em></h1>
+    <p class="step-desc">Informações práticas para organizarmos o início do projeto e a visita técnica ao espaço.</p>
+    <span class="hl-number">07</span>
+  </div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>Disponibilidade para a visita técnica <span class="req">*</span></label>
+    </div>
+  </div>
+  <div class="card-group cols2">
+    <div class="option-card">
+      <input type="radio" name="disponibilidade" id="disp-semana" value="Dias de semana (manhã ou tarde)">
+      <label for="disp-semana"><span class="oc-title">Dias de semana</span><span class="oc-sub">Manhã ou tarde</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="disponibilidade" id="disp-manha" value="Apenas manhãs">
+      <label for="disp-manha"><span class="oc-title">Apenas manhãs</span><span class="oc-sub">Segunda a sexta</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="disponibilidade" id="disp-tarde" value="Apenas tardes">
+      <label for="disp-tarde"><span class="oc-title">Apenas tardes</span><span class="oc-sub">Segunda a sexta</span></label>
+    </div>
+    <div class="option-card">
+      <input type="radio" name="disponibilidade" id="disp-sabado" value="Sábados">
+      <label for="disp-sabado"><span class="oc-title">Sábados</span><span class="oc-sub">Qualquer horário</span></label>
+    </div>
+  </div>
+
+  <div class="field-group cols2">
+    <div class="field">
+      <label>Há outras pessoas que participam das decisões do projeto?</label>
+      <select id="decisores">
+        <option value="">Selecione</option>
+        <option>Sou o único decisor</option>
+        <option>Sim, meu/minha cônjuge / sócio(a)</option>
+        <option>Sim, equipe / comitê interno</option>
+        <option>Sim, tenho que consultar um superior</option>
+      </select>
+    </div>
+    <div class="field" id="f-contato-obra">
+      <label>Contato responsável na obra / local <span class="opt">(se diferente de você)</span></label>
+      <input type="text" id="contato-obra" placeholder="Nome e telefone">
+    </div>
+  </div>
+
+  <div class="divider-label"><span>Necessidades especiais</span></div>
+
+  <div class="field-group">
+    <div class="field">
+      <label>O projeto precisa atender a alguma norma específica? <span class="opt">(selecione todos que se aplicam)</span></label>
+    </div>
+  </div>
+
+  <div class="toggle-row" onclick="toggleRow(this)" id="tr-acessibilidade">
+    <input type="checkbox" name="norma" value="Acessibilidade (ABNT NBR 9050)">
+    <span class="tr-label">Acessibilidade — ABNT NBR 9050 (rampas, banheiros adaptados, circulação para PCD)</span>
+    <div class="tr-check">✓</div>
+  </div>
+  <div class="toggle-row" onclick="toggleRow(this)" id="tr-infantil">
+    <input type="checkbox" name="norma" value="Segurança infantil (INMETRO / ABNT)">
+    <span class="tr-label">Segurança infantil — INMETRO / ABNT (cantos, materiais atóxicos, alturas seguras)</span>
+    <div class="tr-check">✓</div>
+  </div>
+  <div class="toggle-row" onclick="toggleRow(this)" id="tr-incendio">
+    <input type="checkbox" name="norma" value="Segurança contra incêndio (Corpo de Bombeiros)">
+    <span class="tr-label">Segurança contra incêndio — Corpo de Bombeiros (rotas de fuga, materiais)</span>
+    <div class="tr-check">✓</div>
+  </div>
+  <div class="toggle-row" onclick="toggleRow(this)" id="tr-anvisa">
+    <input type="checkbox" name="norma" value="Vigilância Sanitária (ANVISA)">
+    <span class="tr-label">Vigilância Sanitária — ANVISA (espaços de alimentação, saúde ou educação)</span>
+    <div class="tr-check">✓</div>
+  </div>
+  <div class="toggle-row" onclick="toggleRow(this)" id="tr-sem-norma">
+    <input type="checkbox" name="norma" value="Não se aplica / não sei">
+    <span class="tr-label">Não sei ou não se aplica ao meu projeto</span>
+    <div class="tr-check">✓</div>
+  </div>
+
+  <div class="field-group" style="margin-top:1.5rem;">
+    <div class="field">
+      <label>Alguma informação adicional que queira compartilhar? <span class="opt">(opcional)</span></label>
+      <textarea id="obs" rows="3" style="min-height:100px;" placeholder="Espaço livre para o que não coube nas perguntas anteriores — histórico do espaço, dúvidas, expectativas específicas, contexto relevante..."></textarea>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn btn-ghost" onclick="prevStep(6)">← Voltar</button>
+    <span class="step-counter">7 / 7</span>
+    <button class="btn btn-gold" onclick="submitForm()">Salvar PDF do briefing ✦</button>
+  </div>
+</div>
+
+</div><!-- end form-wrapper -->
+
+<!-- ===== TELA DE SUCESSO ===== -->
+<div id="success-screen">
+  <div class="success-icon">✓</div>
+  <h2 class="success-title">Briefing preenchido<br><em>com sucesso!</em></h2>
+  <p class="success-sub">Obrigado por compartilhar tudo isso. Favor encaminhar seu briefing em PDF via WhatsApp para o Ricardo.</p>
+  <div class="ornament"><div class="ornament-diamond"></div></div>
+  <div class="action-row" style="margin-top:1.5rem; margin-bottom: 3rem; flex-direction: column; align-items: center; gap: 1rem;">
+    <button class="btn btn-gold" id="btn-pdf" onclick="gerarPDFeWhatsApp()" style="font-size:0.9rem; padding: 1rem 2.5rem;">⬇ Salvar PDF do briefing</button>
+    <a id="btn-whatsapp" href="#" target="_blank" class="btn" style="background:#25D366; color:white; font-size:0.9rem; padding: 1rem 2.5rem; text-decoration:none; display:none;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="white" style="flex-shrink:0;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.125.558 4.12 1.533 5.851L.057 23.882a.5.5 0 0 0 .614.637l6.194-1.62A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.893a9.866 9.866 0 0 1-5.031-1.378l-.36-.214-3.733.977.999-3.648-.235-.374A9.867 9.867 0 0 1 2.108 12C2.108 6.527 6.527 2.108 12 2.108c5.473 0 9.893 4.419 9.893 9.892 0 5.473-4.42 9.893-9.893 9.893z"/></svg>
+      Encaminhar via WhatsApp para Ricardo
+    </a>
+    <button class="btn btn-ghost" onclick="copyData()" style="font-size:0.82rem;">📋 Copiar dados</button>
+  </div>
+</div>
+
+<!-- ===== PDF CANVAS (oculto, renderizado para captura) ===== -->
+<div id="pdf-canvas" style="display:none; position:fixed; left:-9999px; top:0; width:794px; background:#F8F5EF; font-family:'Jost',sans-serif; color:#1C1A16;">
+</div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+let currentStep = 0;
+const totalSteps = 7;
+const stars = {};
+const budgetLabels = [
+  'Não definido', 'Até R$ 5.000', 'R$ 5 a 15 mil',
+  'R$ 15 a 30 mil', 'R$ 30 a 50 mil', 'R$ 50 a 80 mil',
+  'R$ 80 a 120 mil', 'R$ 120 a 180 mil', 'R$ 180 a 250 mil',
+  'R$ 250 a 400 mil', 'R$ 400 a 600 mil', 'Acima de R$ 600 mil'
+];
+
+// ── Collected data store ──────────────────────────────────────
+let formData = {};
+
+document.querySelectorAll('#estilos-group input[type=checkbox]').forEach(cb => {
+  cb.addEventListener('change', () => {
+    const checked = document.querySelectorAll('#estilos-group input:checked');
+    if (checked.length > 2) cb.checked = false;
+  });
+});
+
+function updateBudget(v) {
+  const pct = (v / 11) * 100;
+  const el = document.getElementById('budget-range');
+  el.style.setProperty('--pct', pct + '%');
+  document.getElementById('budget-label').textContent = budgetLabels[v] || 'Não definido';
+}
+updateBudget(0);
+
+function setStar(el, key, val) {
+  stars[key] = val;
+  const group = el.closest('.priority-stars');
+  group.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('active', i < val));
+}
+
+function toggleRow(el) {
+  el.classList.toggle('checked');
+  el.querySelector('input[type=checkbox]').checked = !el.querySelector('input[type=checkbox]').checked;
+}
+
+function setProgress(step) {
+  document.querySelectorAll('.prog-step').forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    if (i < step) s.classList.add('done');
+    if (i === step) s.classList.add('active');
+  });
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('step-' + n);
+  if (panel) { panel.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  setProgress(n);
+  currentStep = n;
+}
+
+function clearAllErrors() {
+  document.querySelectorAll('.has-error').forEach(el => el.classList.remove('has-error'));
+  document.querySelectorAll('.invalid').forEach(el => el.classList.remove('invalid'));
+  document.querySelectorAll('.step-error-banner').forEach(el => el.remove());
+}
+
+function markError(fieldId, wrapperId) {
+  if (fieldId) document.getElementById(fieldId)?.classList.add('invalid');
+  if (wrapperId) document.getElementById(wrapperId)?.classList.add('has-error');
+}
+
+function showBanner(stepIndex, msg) {
+  const nav = document.querySelector('#step-' + stepIndex + ' .step-nav');
+  if (!nav) return;
+  const old = document.querySelector('#step-' + stepIndex + ' .step-error-banner');
+  if (old) old.remove();
+  const b = document.createElement('div');
+  b.className = 'step-error-banner';
+  b.style.cssText = 'background:#FDF0F0;border:1px solid #F5B8B4;border-left:4px solid #C0392B;border-radius:6px;padding:0.75rem 1rem;font-size:0.82rem;color:#8B2E2E;margin-bottom:1rem;';
+  b.textContent = msg;
+  nav.parentNode.insertBefore(b, nav);
+}
+
+function validate(stepIndex) {
+  clearAllErrors();
+  let missing = [];
+
+  if (stepIndex === 0) {
+    if (!document.getElementById('nome').value.trim())                          { markError('nome','f-nome');           missing.push('Nome completo'); }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('email').value.trim())) { markError('email','f-email');          missing.push('E-mail'); }
+    if (!document.getElementById('telefone').value.trim())                      { markError('telefone','f-telefone');   missing.push('Telefone'); }
+    if (!document.getElementById('como-chegou').value)                          { markError('como-chegou','f-como-chegou'); missing.push('Como chegou até mim'); }
+  }
+
+  if (stepIndex === 1) {
+    if (!document.querySelector('input[name="tipo-proj"]:checked'))             { markError(null,'f-tipo-projeto');    missing.push('Tipo de projeto'); }
+    if (!document.getElementById('descricao-projeto').value.trim())             { markError('descricao-projeto','f-descricao-projeto'); missing.push('Descrição'); }
+    if (!document.getElementById('uso').value.trim())                           { markError('uso','f-uso');             missing.push('Quem vai usar'); }
+    if (!document.getElementById('objetivo').value)                             { markError('objetivo','f-objetivo');   missing.push('Objetivo'); }
+    if (!document.getElementById('prazo').value)                                { markError('prazo','f-prazo');         missing.push('Prazo'); }
+  }
+
+  if (stepIndex === 2) {
+    if (!document.getElementById('endereco').value.trim())                      { markError('endereco','f-endereco');   missing.push('Endereço'); }
+    if (!document.getElementById('area').value)                                 { markError('area','f-area');           missing.push('Área'); }
+    if (!document.getElementById('ambientes-desc').value.trim())                { markError('ambientes-desc','f-ambientes-desc'); missing.push('Ambientes'); }
+    if (!document.querySelector('input[name="estado-imovel"]:checked'))         { markError(null,'f-estado-imovel');   missing.push('Estado do imóvel'); }
+  }
+
+  if (missing.length > 0) {
+    showBanner(stepIndex, '⚠ Preencha os campos obrigatórios: ' + missing.join(', ') + '.');
+    return false;
+  }
+  return true;
+}
+
+function nextStep(current) {
+  if (!validate(current)) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  showStep(current + 1);
+}
+function prevStep(current) { showStep(current - 1); }
+function getChecked(name) { return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(c => c.value).join(', ') || '—'; }
+function val(id) { return document.getElementById(id)?.value?.trim() || '—'; }
+
+function collectFormData() {
+  formData = {
+    nome: val('nome'),
+    empresa: val('empresa') === '—' ? '' : val('empresa'),
+    email: val('email'),
+    telefone: val('telefone'),
+    comoChegou: val('como-chegou'),
+    expDesign: getChecked('exp-design'),
+    tipoProjeto: getChecked('tipo-proj'),
+    descricao: val('descricao-projeto'),
+    uso: val('uso'),
+    objetivo: val('objetivo'),
+    prazo: val('prazo'),
+    endereco: val('endereco') + (document.getElementById('uf').value ? ', ' + document.getElementById('uf').value : ''),
+    area: document.getElementById('area').value ? document.getElementById('area').value + ' m²' : '—',
+    peDireito: document.getElementById('pe-direito').value ? document.getElementById('pe-direito').value + ' m' : '—',
+    qtdAmbientes: val('ambientes'),
+    ambientesDesc: val('ambientes-desc'),
+    estadoImovel: getChecked('estado-imovel'),
+    restricoes: val('restricoes'),
+    planta: val('planta'),
+    estilos: getChecked('estilo'),
+    coresPref: getChecked('cor'),
+    evitar: val('evitar'),
+    prioridades: {
+      estetica: stars['estetica'] || 0,
+      funcional: stars['funcional'] || 0,
+      durabilidade: stars['durabilidade'] || 0,
+      manutencao: stars['manutencao'] || 0,
+      conforto: stars['conforto'] || 0,
+      sustentabilidade: stars['sustentabilidade'] || 0,
+    },
+    budget: document.getElementById('budget-label').textContent,
+    flexOrcamento: val('flex-orcamento'),
+    referencias: val('referencias'),
+    refPositiva: val('ref-positiva'),
+    refNegativa: val('ref-negativa'),
+    palavras: getChecked('palavra'),
+    disponibilidade: getChecked('disponibilidade'),
+    decisores: val('decisores'),
+    contatoObra: val('contato-obra'),
+    normas: getChecked('norma'),
+    obs: val('obs'),
+    data: new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' })
+  };
+}
+
+function submitForm() {
+  collectFormData();
+  document.getElementById('form-wrapper').style.display = 'none';
+  document.getElementById('success-screen').classList.add('active');
+  document.querySelector('.progress-wrap').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── PDF GENERATION ─────────────────────────────────────────────
+function starStr(n) { return '★'.repeat(n) + '☆'.repeat(5 - n); }
+function orDash(v) { return (!v || v === '—') ? '—' : v; }
+
+function sectionHTML(title, rows) {
+  return `
+  <div style="padding:28px 52px 4px;background:#FFFFFF;font-family:'Jost',sans-serif;">
+    <div style="font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:#8A847C;
+                border-bottom:1px solid #E2DDD4;padding-bottom:7px;margin-bottom:0;">${title}</div>
+  </div>
+  <div style="padding:0 52px 20px;background:#FFFFFF;font-family:'Jost',sans-serif;">
+    ${rows.map(([k,v]) => `
+      <div style="display:flex;gap:12px;padding:7px 0;border-bottom:1px solid #F5F2EE;font-size:11px;align-items:flex-start;">
+        <div style="width:170px;flex-shrink:0;color:#8A847C;padding-top:1px;">${k}</div>
+        <div style="flex:1;color:#1C1A16;font-weight:500;line-height:1.55;">${orDash(v)}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function prioSectionHTML(prioRows) {
+  return `
+  <div style="padding:28px 52px 4px;background:#FFFFFF;font-family:'Jost',sans-serif;">
+    <div style="font-size:9px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:#8A847C;
+                border-bottom:1px solid #E2DDD4;padding-bottom:7px;">Prioridades do projeto</div>
+  </div>
+  <div style="padding:12px 52px 24px;background:#FFFFFF;font-family:'Jost',sans-serif;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      ${prioRows.map(([k,v]) => `
+        <div style="background:#FDFCF9;border:1px solid #E8E4DC;border-radius:6px;padding:10px 14px;">
+          <div style="font-size:9px;color:#8A847C;margin-bottom:5px;">${k}</div>
+          <div style="font-size:15px;color:#B8960C;letter-spacing:2px;">${starStr(v)}</div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function buildSectionBlocks(d) {
+  const prioRows = [
+    ['Estética e beleza visual',      d.prioridades.estetica],
+    ['Funcionalidade e praticidade',   d.prioridades.funcional],
+    ['Durabilidade dos materiais',     d.prioridades.durabilidade],
+    ['Facilidade de manutenção',       d.prioridades.manutencao],
+    ['Conforto e bem-estar',           d.prioridades.conforto],
+    ['Sustentabilidade',               d.prioridades.sustentabilidade],
+  ];
+  return [
+    sectionHTML('01 · Identificação', [
+      ['Nome completo',               d.nome],
+      ...(d.empresa ? [['Empresa / Organização', d.empresa]] : []),
+      ['E-mail',                      d.email],
+      ['WhatsApp / Telefone',         d.telefone],
+      ['Como chegou até Ricardo',     d.comoChegou],
+      ['Experiência anterior com DI', d.expDesign],
+    ]),
+    sectionHTML('02 · O Projeto', [
+      ['Tipo de projeto',   d.tipoProjeto],
+      ['Objetivo principal',d.objetivo],
+      ['Prazo desejado',    d.prazo],
+      ['Descrição do projeto', d.descricao],
+      ['Quem usará o espaço',  d.uso],
+    ]),
+    sectionHTML('03 · O Espaço', [
+      ['Endereço',               d.endereco],
+      ['Área total estimada',    d.area],
+      ['Pé-direito estimado',    d.peDireito],
+      ['Ambientes a projetar',   d.ambientesDesc],
+      ['Estado atual do imóvel', d.estadoImovel],
+      ['Planta disponível',      d.planta],
+      ['Restrições / condicionantes', d.restricoes],
+    ]),
+    sectionHTML('04 · Estilo e Identidade Visual', [
+      ['Estilos preferidos', d.estilos],
+      ['Paleta de cores',    d.coresPref],
+      ['O que evitar',       d.evitar],
+    ]),
+    prioSectionHTML(prioRows),
+    sectionHTML('05 · Orçamento', [
+      ['Orçamento estimado de execução', d.budget],
+      ['Flexibilidade no orçamento',     d.flexOrcamento],
+    ]),
+    sectionHTML('06 · Referências e Inspirações', [
+      ['Links e referências',           d.referencias],
+      ['Projetos que admira',           d.refPositiva],
+      ['Projetos que não quer',         d.refNegativa],
+      ['Palavras-chave do projeto ideal', d.palavras],
+    ]),
+    sectionHTML('07 · Logística e Informações Finais', [
+      ['Disponibilidade para visita',      d.disponibilidade],
+      ['Outros decisores no projeto',      d.decisores],
+      ['Contato responsável no local',     d.contatoObra],
+      ['Normas e requisitos especiais',    d.normas],
+      ['Observações adicionais',           d.obs],
+    ]),
+  ];
+}
+
+async function gerarPDFeWhatsApp() {
+  await gerarPDF();
+  // Reveal WhatsApp button after PDF is saved
+  const waBtn = document.getElementById('btn-whatsapp');
+  const nome  = encodeURIComponent(formData.nome || 'cliente');
+  const msg   = encodeURIComponent(
+    `Olá Ricardo! Sou ${formData.nome || 'seu cliente'} e acabei de preencher o briefing do projeto. Segue em anexo o PDF gerado. 📋`
+  );
+  waBtn.href = `https://wa.me/5582999450298?text=${msg}`;
+  waBtn.style.display = 'flex';
+  waBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+  const btn = document.getElementById('btn-pdf');
+  btn.textContent = '⏳ Gerando PDF...';
+  btn.disabled = true;
+
+  try {
+    const { jsPDF } = window.jspdf;
+
+    // A4 dimensions in mm and px (at 96dpi, 1mm ≈ 3.7795px)
+    const PDF_W_MM  = 210;
+    const PDF_H_MM  = 297;
+    const SCALE     = 1.2;                       // reduzido de 2 → 1.2 (boa nitidez, arquivo menor)
+    const JPEG_Q    = 0.82;                      // qualidade JPEG (0–1)
+    const PX_PER_MM = 3.7795 * SCALE;
+    const PAGE_W_PX = Math.round(PDF_W_MM * PX_PER_MM);
+    const PAGE_H_PX = Math.round(PDF_H_MM * PX_PER_MM);
+
+    const container = document.getElementById('pdf-canvas');
+    container.style.display = 'block';
+    container.style.width    = (PAGE_W_PX / SCALE) + 'px';  // 794px logical
+
+    // ── Build section HTML blocks separately ──────────────────
+    const d = formData;
+
+    // Header block HTML
+    const headerHTML = `
+      <div style="background:#F5F1E8;padding:40px 52px 32px;position:relative;overflow:hidden;border-bottom:1px solid #E2DDD4;font-family:'Jost',sans-serif;">
+        <div style="position:absolute;top:-30px;right:-30px;width:180px;height:180px;border-radius:50%;background:rgba(184,150,12,0.07);pointer-events:none;"></div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:#1C1A16;letter-spacing:0.04em;margin-bottom:2px;">Ricardo Sarmento</div>
+        <div style="font-size:9px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:#8A847C;margin-bottom:24px;">Design de Interiores</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:#B8960C;font-style:italic;margin-bottom:2px;">Briefing de Projeto</div>
+            <div style="font-size:9px;color:#8A847C;letter-spacing:0.1em;">BRF-001 · Documento de coleta de dados</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:#8A847C;">${d.data}</div>
+            <div style="font-size:10px;font-weight:600;color:#B8960C;margin-top:2px;">${d.nome}</div>
+          </div>
+        </div>
+      </div>
+      <div style="height:3px;background:linear-gradient(to right,#B8960C,#D4AC20,#B8960C);"></div>`;
+
+    // Footer block HTML
+    const footerHTML = `
+      <div style="background:#F5F1E8;border-top:1px solid #E2DDD4;padding:18px 52px;display:flex;justify-content:space-between;align-items:center;font-family:'Jost',sans-serif;">
+        <div style="font-size:9px;color:#8A847C;">Ricardo Sarmento · Design de Interiores · BRF-001</div>
+        <div style="font-size:9px;color:#B8960C;letter-spacing:0.08em;">Documento confidencial</div>
+      </div>`;
+
+    // Section content blocks
+    const sectionBlocks = buildSectionBlocks(d);
+
+    // ── Helper: render an HTML string to a canvas ──────────────
+    const toJpeg = (c, q) => c.toDataURL('image/jpeg', q);
+
+    async function renderBlock(html) {
+      container.innerHTML = `<div style="width:${PAGE_W_PX/SCALE}px;background:#FFFFFF;font-family:'Jost',sans-serif;color:#1C1A16;">${html}</div>`;
+      await new Promise(r => setTimeout(r, 80));
+      return html2canvas(container, {
+        scale: SCALE,
+        useCORS: true,
+        backgroundColor: '#FFFFFF',
+        logging: false,
+        windowWidth: PAGE_W_PX / SCALE,
+        imageTimeout: 0,
+      });
+    }
+
+    // ── Render header, footer, and all sections ───────────────
+    const headerCanvas = await renderBlock(headerHTML);
+    const footerCanvas = await renderBlock(footerHTML);
+    const sectionCanvases = [];
+    for (const block of sectionBlocks) {
+      sectionCanvases.push(await renderBlock(block));
+    }
+
+    container.style.display = 'none';
+    container.innerHTML = '';
+
+    // ── Compose pages ─────────────────────────────────────────
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [PAGE_W_PX / SCALE, PAGE_H_PX / SCALE], hotfixes: ['px_scaling'] });
+
+    const PW = PAGE_W_PX / SCALE;   // logical px width  = 794
+    const PH = PAGE_H_PX / SCALE;   // logical px height = 1123
+
+    const headerH = (headerCanvas.height / SCALE);
+    const footerH = (footerCanvas.height / SCALE);
+    const contentH = PH - headerH - footerH;   // usable body height per page
+
+    // Converts a canvas to a JPEG data URL at logical dimensions
+    const toImg = (c) => ({ url: toJpeg(c, JPEG_Q), w: c.width / SCALE, h: c.height / SCALE });
+
+    const header = toImg(headerCanvas);
+    const footer = toImg(footerCanvas);
+    const sections = sectionCanvases.map(toImg);
+
+    let pageIndex  = 0;
+    let cursorY    = headerH;   // current Y position on this page (below header)
+
+    function startPage() {
+      if (pageIndex > 0) pdf.addPage();
+      pageIndex++;
+      pdf.addImage(header.url, 'JPEG', 0, 0, PW, headerH);
+      cursorY = headerH;
+    }
+
+    function closePage() {
+      pdf.addImage(footer.url, 'JPEG', 0, PH - footerH, PW, footerH);
+    }
+
+    startPage();
+
+    for (const sec of sections) {
+      const secH = sec.h;
+
+      // If section doesn't fit in remaining space on this page, close and start new page
+      if (cursorY + secH > PH - footerH) {
+        closePage();
+        startPage();
+      }
+
+      // If a single section is taller than one full content area, split it pixel-by-pixel
+      if (secH > contentH) {
+        let srcY = 0;
+        while (srcY < sec.h * SCALE) {
+          const available = (PH - footerH - cursorY) * SCALE;   // pixels remaining
+          const sliceH_px = Math.min(available, sec.h * SCALE - srcY);
+          const sliceH_mm = sliceH_px / SCALE;
+
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width  = sec.w * SCALE;
+          sliceCanvas.height = sliceH_px;
+          sliceCanvas.getContext('2d').drawImage(
+            sectionCanvases[sections.indexOf(sec)],
+            0, srcY, sec.w * SCALE, sliceH_px,
+            0, 0, sec.w * SCALE, sliceH_px
+          );
+          pdf.addImage(toJpeg(sliceCanvas, JPEG_Q), 'JPEG', 0, cursorY, PW, sliceH_mm);
+          cursorY += sliceH_mm;
+          srcY    += sliceH_px;
+
+          if (srcY < sec.h * SCALE && cursorY >= PH - footerH) {
+            closePage();
+            startPage();
+          }
+        }
+      } else {
+        pdf.addImage(sec.url, 'JPEG', 0, cursorY, PW, secH);
+        cursorY += secH;
+      }
+    }
+
+    closePage();   // close last page
+
+    const nomeArquivo = `briefing_${formData.nome.replace(/\s+/g,'_').toLowerCase()}_${new Date().toISOString().slice(0,10)}.pdf`;
+    pdf.save(nomeArquivo);
+
+    btn.textContent = '✓ PDF salvo!';
+    setTimeout(() => { btn.textContent = '⬇ Salvar PDF do briefing'; btn.disabled = false; }, 3000);
+
+  } catch(e) {
+    console.error(e);
+    btn.textContent = '⚠ Erro — tente novamente';
+    btn.disabled = false;
+  }
+}
+
+function copyData() {
+  let text = 'BRIEFING — RICARDO SARMENTO DESIGN DE INTERIORES\n' + '='.repeat(50) + '\n';
+  const d = formData;
+  const sections = [
+    ['IDENTIFICAÇÃO', [['Nome',d.nome],['Empresa',d.empresa],['E-mail',d.email],['Telefone',d.telefone],['Como chegou',d.comoChegou],['Experiência anterior',d.expDesign]]],
+    ['O PROJETO', [['Tipo',d.tipoProjeto],['Objetivo',d.objetivo],['Prazo',d.prazo],['Descrição',d.descricao],['Uso do espaço',d.uso]]],
+    ['O ESPAÇO', [['Endereço',d.endereco],['Área',d.area],['Ambientes',d.ambientesDesc],['Estado atual',d.estadoImovel]]],
+    ['ESTILO', [['Estilos',d.estilos],['Paleta',d.coresPref],['Evitar',d.evitar]]],
+    ['PRIORIDADES', Object.entries(d.prioridades||{}).map(([k,v])=>[k, starStr(v)])],
+    ['ORÇAMENTO', [['Estimado',d.budget],['Flexibilidade',d.flexOrcamento]]],
+    ['REFERÊNCIAS', [['Links',d.referencias],['Admira',d.refPositiva],['Não quer',d.refNegativa],['Palavras-chave',d.palavras]]],
+    ['LOGÍSTICA', [['Disponibilidade',d.disponibilidade],['Decisores',d.decisores],['Normas',d.normas],['Observações',d.obs]]],
+  ];
+  sections.forEach(([title, rows]) => {
+    text += '\n' + title + '\n' + '-'.repeat(30) + '\n';
+    rows.forEach(([k,v]) => { text += k + ': ' + (v||'—') + '\n'; });
+  });
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.action-row .btn-primary');
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copiado!';
+    setTimeout(() => btn.textContent = orig, 2500);
+  });
+}
+</script>
+</body>
+</html>
